@@ -391,6 +391,99 @@
   })
   .catch((error) => console.error("Error:", error));
 
+  // Fetch the data for the multi-bar chart
+fetch("/multiBarChart/")
+  .then((response) => response.json())
+  .then((result) => {
+    var severityLevels = Object.keys(result);  // List of severity levels: 'Minor', 'Moderate', 'Major'
+    
+    // Initialize arrays for incident counts for each severity level
+    var incidentCount_major = [];
+    var incidentCount_minor = [];
+    var incidentCount_moderate = [];
+
+    // Sort function to sort object keys (months) in chronological order
+    function sortObjectKeys(obj) {
+      return Object.keys(obj).sort((a, b) => parseInt(a) - parseInt(b));
+    }
+
+    // Check if data for each severity level exists and extract incident counts
+    if (severityLevels.length >= 1) {
+      var sl1_data = result[severityLevels[0]];  // Data for the first severity level
+      var sortedKeys1 = sortObjectKeys(sl1_data);
+      incidentCount_minor = sortedKeys1.map((key) => sl1_data[key]);
+    }
+    if (severityLevels.length >= 2) {
+      var sl2_data = result[severityLevels[1]];  // Data for the second severity level
+      var sortedKeys2 = sortObjectKeys(sl2_data);
+      incidentCount_moderate = sortedKeys2.map((key) => sl2_data[key]);
+    }
+    if (severityLevels.length >= 3) {
+      var sl3_data = result[severityLevels[2]];  // Data for the third severity level
+      var sortedKeys3 = sortObjectKeys(sl3_data);
+      incidentCount_major = sortedKeys3.map((key) => sl3_data[key]);
+    }
+
+    // Get the canvas context for the multi-bar chart
+    var multipleBarChart = document.getElementById("multipleBarChart").getContext("2d");
+
+    // Create the chart
+    new Chart(multipleBarChart, {
+      type: "bar",  // Set chart type to 'bar'
+      data: {
+        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],  // Month labels
+        datasets: [
+          {
+            label: "Minor Fire",
+            backgroundColor: "#59d05d",
+            borderColor: "#59d05d",
+            data: incidentCount_minor,  // Data for Minor Fire incidents
+          },
+          {
+            label: "Moderate Fire",
+            backgroundColor: "#fdaf4b",
+            borderColor: "#fdaf4b",
+            data: incidentCount_moderate,  // Data for Moderate Fire incidents
+          },
+          {
+            label: "Major Fire",
+            backgroundColor: "#177dff",
+            borderColor: "#177dff",
+            data: incidentCount_major,  // Data for Major Fire incidents
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        legend: {
+          position: "bottom",  // Legend position
+        },
+        title: {
+          display: true,
+          text: "Fire Incidents by Severity Level",  // Chart title
+        },
+        tooltips: {
+          mode: "index",
+          intersect: false,
+        },
+        scales: {
+          xAxes: [
+            {
+              stacked: true,  // Stacked bar chart for X axis
+            },
+          ],
+          yAxes: [
+            {
+              stacked: true,  // Stacked bar chart for Y axis
+            },
+          ],
+        },
+      },
+    });
+  })
+  .catch((error) => console.error("Error:", error));  // Handle any errors in fetching or processing data
+
     
     }
   
@@ -406,7 +499,7 @@
     radarChart = document.getElementById("radarChart").getContext("2d"),
     bubbleChart = document.getElementById("bubbleChart").getContext("2d"),
     // multipleLineChart = document.getElementById("multipleLineChart").getContext("2d"),
-    multipleBarChart = document.getElementById("multipleBarChart").getContext("2d"),
+    // multipleBarChart = document.getElementById("multipleBarChart").getContext("2d"),
     htmlLegendsChart = document.getElementById("htmlLegendsChart").getContext("2d");
 
 
@@ -457,29 +550,29 @@
 //     },
 //   });
 
-  var myBarChart = new Chart(barChart, {
-    type: "bar",
-    data: {
-      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-      datasets: [{
-        label: "Sales",
-        backgroundColor: "rgb(23, 125, 255)",
-        borderColor: "rgb(23, 125, 255)",
-        data: [3, 2, 9, 5, 4, 6, 4, 6, 7, 8, 7, 4],
-      }],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        yAxes: [{
-          ticks: {
-            beginAtZero: true,
-          },
-        }],
-      },
-    },
-  });
+//   var myBarChart = new Chart(barChart, {
+//     type: "bar",
+//     data: {
+//       labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+//       datasets: [{
+//         label: "Sales",
+//         backgroundColor: "rgb(23, 125, 255)",
+//         borderColor: "rgb(23, 125, 255)",
+//         data: [3, 2, 9, 5, 4, 6, 4, 6, 7, 8, 7, 4],
+//       }],
+//     },
+//     options: {
+//       responsive: true,
+//       maintainAspectRatio: false,
+//       scales: {
+//         yAxes: [{
+//           ticks: {
+//             beginAtZero: true,
+//           },
+//         }],
+//       },
+//     },
+//   });
 
 //   var myPieChart = new Chart(pieChart, {
 //     type: "pie",
