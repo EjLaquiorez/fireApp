@@ -72,3 +72,18 @@ class WeatherConditions(BaseModel):
     humidity = models.DecimalField(max_digits=10, decimal_places=2)
     wind_speed = models.DecimalField(max_digits=10, decimal_places=2)
     weather_description = models.CharField(max_length=150)
+
+def map_station(request):
+    fireStations = FireStation.objects.values('name', 'latitude', 'longitude')
+
+    for fs in fireStations:
+        fs['latitude'] = float(fs['latitude'])
+        fs['longitude'] = float(fs['longitude'])
+
+    fireStations_list = list(fireStations)
+
+    context = {
+        'fireStations': fireStations_list,
+    }
+
+    return render(request, 'map_station.html', context)
