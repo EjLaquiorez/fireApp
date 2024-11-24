@@ -33,14 +33,14 @@ class Incident(BaseModel):
 
 
 class FireStation(BaseModel):
-    name = models.CharField(max_length=150)
-    latitude = models.DecimalField(
-        max_digits=22, decimal_places=16, null=True, blank=True)
-    longitude = models.DecimalField(
-        max_digits=22, decimal_places=16, null=True, blank=True)
-    address = models.CharField(max_length=150)
-    city = models.CharField(max_length=150)  # can be in separate table
-    country = models.CharField(max_length=150)  # can be in separate table
+    name = models.CharField(max_length=100)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    address = models.TextField()
+    # Add other fields as needed
+
+    def __str__(self):
+        return self.name
 
 
 class Firefighters(BaseModel):
@@ -72,6 +72,26 @@ class WeatherConditions(BaseModel):
     humidity = models.DecimalField(max_digits=10, decimal_places=2)
     wind_speed = models.DecimalField(max_digits=10, decimal_places=2)
     weather_description = models.CharField(max_length=150)
+
+
+class FireIncident(models.Model):
+    STATUS_CHOICES = [
+        ('Active', 'Active'),
+        ('Resolved', 'Resolved'),
+    ]
+
+    incident_type = models.CharField(max_length=100)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    city = models.CharField(max_length=100)
+    location = models.TextField()
+    date = models.DateTimeField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    description = models.TextField(blank=True, null=True)
+    # Add other fields as needed
+
+    def __str__(self):
+        return f"{self.incident_type} at {self.location}"
 
 def map_station(request):
     fireStations = FireStation.objects.values('name', 'latitude', 'longitude')

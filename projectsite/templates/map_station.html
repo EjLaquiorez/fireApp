@@ -6,7 +6,7 @@
 
 <div class="page-inner">
   <div class="page-header">
-    <h4 class="page-title">Dashboard</h4>
+    <h4 class="page-title">Fire Stations Map</h4>
     <ul class="breadcrumbs">
       <li class="nav-home">
         <a href="#">
@@ -27,20 +27,15 @@
       </li>
     </ul>
   </div>
+
   <div class="row">
     <div class="col-md-12">
-      <div class="card card-transparent">
+      <div class="card">
         <div class="card-header">
-          <h4 class="card-title text-center">Fire Stations</h4>
-          <p class="card-category text-center">
-            Looks great on any resolution. Made by our
-            friends from <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>.
-          </p>
+          <h4 class="card-title">Fire Stations Overview</h4>
         </div>
         <div class="card-body">
-          <div class="col-md-10 ml-auto mr-auto">
-            <div id="map" style="width: 100%; height: 400px"></div>
-          </div>
+          <div id="map" style="width: 100%; height: 600px"></div>
         </div>
       </div>
     </div>
@@ -49,81 +44,68 @@
 
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script>
+  // Initialize the map
   var map = L.map('map').setView([9.81644, 118.72239], 13);
-  var truckIcon = L.icon({
-    iconUrl: '../static/img/firetruck.png', // Replace with the path to your red marker icon
-    iconSize: [50, 50], // Adjust the size as needed
-  });
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(map);
 
-  // Create an array to hold all the markers
+  // Custom station icon
+  var stationIcon = L.icon({
+    iconUrl: "{% static 'img/station-icon.png' %}",
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32]
+  });
+
+  var stations = JSON.parse('{{ fireStations|default:"[]"|escapejs|safe }}');
   var markers = [];
 
-<<<<<<< HEAD
-  // Safely initialize marker data with a fallback to empty array
-  var markerData = JSON.parse('{{ fireStations|default:"[]"|escapejs|safe }}');
+  stations.forEach(function(station) {
+    if (station && station.latitude && station.longitude) {
+      var marker = L.marker([station.latitude, station.longitude], { icon: stationIcon }).addTo(map);
+      
+      var popupContent = `
+        <div class="station-popup">
+          <h5>${station.name}</h5>
+          <div class="status-indicator"></div>
+          <p><strong>Status:</strong> ${station.status ? 'Active' : 'Inactive'}</p>
+          <p><strong>Address:</strong> ${station.address}</p>
+        </div>
+      `;
 
-  // Loop through the marker data and create markers
-  markerData.forEach(function (data) {
-    if (data && data.latitude && data.longitude) {  // Add validation check
-      var latitude = parseFloat(data.latitude);
-      var longitude = parseFloat(data.longitude);
-
-      // Only create marker if coordinates are valid numbers
-      if (!isNaN(latitude) && !isNaN(longitude)) {
-        var marker = L.marker([latitude, longitude], { icon: truckIcon }).addTo(map);
-
-        // Create a popup and set its content
-        var popupContent = data.name || 'Unnamed Station';  // Add fallback name
-        var popup = L.popup().setContent(popupContent);
-
-        marker.bindPopup(popupContent);
-
-        // Bind mouseover and mouseout events to the marker
-        marker.on('mouseover', function (e) {
-          this.openPopup();
-        });
-
-        marker.on('mouseout', function (e) {
-          this.closePopup();
-        });
-
-        // Add the marker to the markers array
-        markers.push(marker);
-      }
+      marker.bindPopup(popupContent);
+      markers.push(marker);
     }
-=======
-  // Define the marker data
-  var markerData = {{ fireStations|safe }};
-
-  // Loop through the marker data and create markers
-  markerData.forEach(function (data) {
-    var latitude = parseFloat(data.latitude);
-    var longitude = parseFloat(data.longitude);
-
-    var marker = L.marker([latitude, longitude], { icon: truckIcon }).addTo(map);
-
-    // Create a popup and set its content
-    var popupContent = data.name;
-    var popup = L.popup().setContent(popupContent);
-
-    marker.bindPopup(popupContent);
-
-    // Bind mouseover and mouseout events to the marker
-    marker.on('mouseover', function (e) {
-      this.openPopup();
-    });
-
-    marker.on('mouseout', function (e) {
-      this.closePopup();
-    });
-
-    // Add the marker to the markers array
-    markers.push(marker);
->>>>>>> c654a48888151611e023a084f65f8b9916487702
   });
+
+  // Fit map to show all markers
+  if (markers.length > 0) {
+    var group = new L.featureGroup(markers);
+    map.fitBounds(group.getBounds().pad(0.1));
+  }
 </script>
+
+<style>
+  .station-popup {
+    min-width: 200px;
+  }
+  .station-popup h5 {
+    margin-bottom: 10px;
+    color: #1a2035;
+  }
+  .station-popup p {
+    margin-bottom: 5px;
+  }
+  .status-indicator {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    margin-right: 5px;
+    background-image: url("{% static 'img/firetruck.png' %}");
+    background-size: contain;
+    background-repeat: no-repeat;
+  }
+</style>
 {% endblock %}

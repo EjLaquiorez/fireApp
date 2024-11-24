@@ -1,10 +1,6 @@
 from django.shortcuts import render
 from django.views.generic.list import ListView
-<<<<<<< HEAD
 from fire.models import Locations, Incident, FireStation
-=======
-from fire.models import Locations, Incident, FireStation 
->>>>>>> c654a48888151611e023a084f65f8b9916487702
 from django.db import connection
 from django.http import JsonResponse
 from django.db.models.functions import ExtractMonth
@@ -12,20 +8,47 @@ from django.db.models import Count
 from datetime import datetime
 
 def map_station(request):
-    fireStations = FireStation.objects.values('name', 'latitude', 'longitude')
-
-    for fs in fireStations:
-        fs['latitude'] = float(fs['latitude'])
-        fs['longitude'] = float(fs['longitude'])
-
-    fireStations_list = list(fireStations)
+    # Get fire stations from your database
+    stations = FireStation.objects.all()
+    
+    # Format station data for the template
+    station_data = [{
+        'latitude': station.latitude,
+        'longitude': station.longitude,
+        'name': station.name,
+        'address': station.address,
+        # Add other fields as needed
+    } for station in stations]
 
     context = {
-        'fireStations': fireStations_list,
+        'fireStations': station_data,
     }
-
     return render(request, 'map_station.html', context)
 
+def map_incident(request):
+    # Get fire incidents from your database
+    incidents = Incident.objects.all()
+    
+    # Get unique cities for the filter
+    cities = incidents.values_list('city', flat=True).distinct()
+    
+    # Format incident data for the template
+    incident_data = [{
+        'latitude': incident.latitude,
+        'longitude': incident.longitude,
+        'city': incident.city,
+        'incident_type': incident.incident_type,
+        'date': incident.date.strftime('%Y-%m-%d') if incident.date else None,
+        'status': incident.status,
+        'location': incident.location,
+        'description': incident.description,
+    } for incident in incidents]
+
+    context = {
+        'fireIncidents': incident_data,
+        'cities': list(cities),
+    }
+    return render(request, 'map_incident.html', context)
 
 class HomePageView(ListView):
     model = Locations
@@ -188,17 +211,11 @@ def multipleBarbySeverity(request):
     
     return JsonResponse(result)
 
-def map_station(request):
-    fireStations = FireStation.objects.values('name', 'latitude', 'longitude')
-
-    for fs in fireStations:
-        fs['latitude'] = float(fs['latitude'])
-        fs['longitude'] = float(fs['longitude'])
-
-    fireStations_list = list(fireStations)
-
+def stations_view(request):
+    # Get all fire stations
+    stations = FireStation.objects.all()
+    
     context = {
-        'fireStations': fireStations_list,
+        'stations': stations,
     }
-
-    return render(request, 'map_station.html', context)
+    return render(request, 'stations.html', context)

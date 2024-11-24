@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+<div class="page-inner">
+  <div class="page-header">
+    <h4 class="page-title">Fire Incidents Map</h4>
+    <ul class="breadcrumbs">
+      <li class="nav-home">
+        <a href="#">
+          <i class="flaticon-home"></i>
+        </a>
+      </li>
+      <li class="separator">
+        <i class="flaticon-right-arrow"></i>
+      </li>
+      <li class="nav-item">
+        <a href="#">Maps</a>
+      </li>
+      <li class="separator">
+        <i class="flaticon-right-arrow"></i>
+      </li>
+      <li class="nav-item">
+        <a href="#">Incidents</a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <h4 class="card-title">Fire Incidents Overview</h4>
+          </div>
+          <div class="row mt-3">
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="locationFilter">Filter by Location</label>
+                <select id="locationFilter" class="form-control">
+                  <option value="all">All Locations</option>
+                  {% for location in locations %}
+                    <option value="{{ location }}">{{ location }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="statusFilter">Filter by Status</label>
+                <select id="statusFilter" class="form-control">
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="resolved">Resolved</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="map" style="width: 100%; height: 600px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+  // Initialize the map
+  var map = L.map('map').setView([9.81644, 118.72239], 13);
+
+  // Add the OpenStreetMap tiles
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
+
+  // Custom fire icon
+  var fireIcon = L.icon({
+    iconUrl: "{% static 'img/fire-icon.png' %}",
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32]
+  });
+
+  var markers = [];
+  var incidents = JSON.parse('{{ fireIncidents|default:"[]"|escapejs|safe }}');
+
+  function createMarkers(filterLocation = 'all', filterStatus = 'all') {
+    // Clear existing markers
+    markers.forEach(marker => marker.remove());
+    markers = [];
+
+    incidents.forEach(function(incident) {
+      if (incident && incident.latitude && incident.longitude) {
+        // Apply filters
+        if ((filterLocation === 'all' || incident.location === filterLocation) && 
+            (filterStatus === 'all' || incident.status.toLowerCase() === filterStatus)) {
+          
+          var latitude = parseFloat(incident.latitude);
+          var longitude = parseFloat(incident.longitude);
+
+          if (!isNaN(latitude) && !isNaN(longitude)) {
+            var marker = L.marker([latitude, longitude], { icon: fireIcon }).addTo(map);
+
+            // Format date if it exists
+            var date = incident.date ? new Date(incident.date).toLocaleDateString() : 'N/A';
+
+            // Create detailed popup content
+            var popupContent = `
+              <div class="incident-popup">
+                <h5>${incident.incident_type || 'Fire Incident'}</h5>
+                <p><strong>Date:</strong> ${date}</p>
+                <p><strong>Location:</strong> ${incident.location || 'N/A'}</p>
+                <p><strong>Status:</strong> <span class="badge ${incident.status === 'Active' ? 'badge-danger' : 'badge-success'}">${incident.status || 'N/A'}</span></p>
+                <p><strong>Description:</strong> ${incident.description || 'No description available'}</p>
+              </div>
+            `;
+
+            marker.bindPopup(popupContent);
+
+            // Add hover effects
+            marker.on('mouseover', function(e) {
+              this.openPopup();
+            });
+
+            marker.on('mouseout', function(e) {
+              this.closePopup();
+            });
+
+            markers.push(marker);
+          }
+        }
+      }
+    });
+
+    // Adjust map view to show all markers if there are any
+    if (markers.length > 0) {
+      var group = new L.featureGroup(markers);
+      map.fitBounds(group.getBounds().pad(0.1));
+    }
+  }
+
+  // Initialize markers
+  createMarkers();
+
+  // Add event listeners for filters
+  document.getElementById('locationFilter').addEventListener('change', function(e) {
+    var status = document.getElementById('statusFilter').value;
+    createMarkers(e.target.value, status);
+  });
+
+  document.getElementById('statusFilter').addEventListener('change', function(e) {
+    var location = document.getElementById('locationFilter').value;
+    createMarkers(location, e.target.value);
+  });
+</script>
+
+<style>
+  .incident-popup {
+    min-width: 200px;
+  }
+  .incident-popup h5 {
+    margin-bottom: 10px;
+    color: #1a2035;
+  }
+  .incident-popup p {
+    margin-bottom: 5px;
+  }
+  .badge-danger {
+    background-color: #f25961;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 3px;
+  }
+  .badge-success {
+    background-color: #31ce36;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 3px;
+  }
+</style>
+{% endblock %} 
