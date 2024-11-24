@@ -62,6 +62,7 @@
   // Create an array to hold all the markers
   var markers = [];
 
+<<<<<<< HEAD
   // Safely initialize marker data with a fallback to empty array
   var markerData = JSON.parse('{{ fireStations|default:"[]"|escapejs|safe }}');
 
@@ -94,6 +95,35 @@
         markers.push(marker);
       }
     }
+=======
+  // Define the marker data
+  var markerData = {{ fireStations|safe }};
+
+  // Loop through the marker data and create markers
+  markerData.forEach(function (data) {
+    var latitude = parseFloat(data.latitude);
+    var longitude = parseFloat(data.longitude);
+
+    var marker = L.marker([latitude, longitude], { icon: truckIcon }).addTo(map);
+
+    // Create a popup and set its content
+    var popupContent = data.name;
+    var popup = L.popup().setContent(popupContent);
+
+    marker.bindPopup(popupContent);
+
+    // Bind mouseover and mouseout events to the marker
+    marker.on('mouseover', function (e) {
+      this.openPopup();
+    });
+
+    marker.on('mouseout', function (e) {
+      this.closePopup();
+    });
+
+    // Add the marker to the markers array
+    markers.push(marker);
+>>>>>>> c654a48888151611e023a084f65f8b9916487702
   });
 </script>
 {% endblock %}
