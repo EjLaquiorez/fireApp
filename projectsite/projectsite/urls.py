@@ -12,6 +12,8 @@ urlpatterns = [
     path('chart/multiline/', MultilineIncidentTop3Country, name='multiline-chart'),
     path('chart/bar/', multipleBarbySeverity, name='bar-chart'),
     path('chart.html', views.chart_view, name='chart-html'),  # This should be defined
+    path('stations/', views.map_station, name='map-station'), 
+    
 ]
 
     
