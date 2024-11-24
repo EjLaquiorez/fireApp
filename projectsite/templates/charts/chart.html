@@ -164,23 +164,10 @@
   var myLineChart = new Chart(lineChart, {
     type: "line",
     data: {
-      labels: [
-        "Week 1",
-        "Week 2",
-        "Week 3",
-        "Week 4",
-        "Week 5",
-        "Week 6",
-        "Week 7",
-        "Week 8",
-        "Week 9",
-        "Week 10",
-        "Week 11",
-        "Week 12",
-      ],
+      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
       datasets: [
         {
-          label: "Daily Active Users",
+          label: "Monthly Fire Incidents",
           borderColor: getColorPalette(0),
           pointBorderColor: "#FFF",
           pointBackgroundColor: getColorPalette(1),
@@ -221,15 +208,10 @@
   var myBarChart = new Chart(barChart, {
     type: "bar",
     data: {
-      labels: [
-        "Q1",
-        "Q2",
-        "Q3",
-        "Q4",
-      ],
+      labels: ["Q1 2023", "Q2 2023", "Q3 2023", "Q4 2023"],
       datasets: [
         {
-          label: "Quarterly Revenue ($K)",
+          label: "Quarterly Response Time (Minutes)",
           backgroundColor: getColorPalette(0),
           borderColor: getColorPalette(1),
           data: [3, 2, 9, 5, 4, 6, 4, 6, 7, 8, 7, 4],
@@ -261,7 +243,7 @@
           borderWidth: 0,
         },
       ],
-      labels: ["Mobile Users", "Desktop Users", "Tablet Users"],
+      labels: ["Residential Fires", "Commercial Fires", "Vehicle Fires"],
     },
     options: {
       responsive: true,
@@ -301,7 +283,7 @@
           backgroundColor: [getColorPalette(0), getColorPalette(1), getColorPalette(2)],
         },
       ],
-      labels: ["Product A", "Product B", "Product C"],
+      labels: ["Electrical Fires", "Kitchen Fires", "Chemical Fires"],
     },
     options: {
       responsive: true,
@@ -323,7 +305,7 @@
   var myRadarChart = new Chart(radarChart, {
     type: "radar",
     data: {
-      labels: ["Performance", "Reliability", "Usability", "Features", "Support"],
+      labels: ["Response Time", "Equipment Readiness", "Personnel Training", "Communication", "Resource Management"],
       datasets: [
         {
           data: [20, 10, 30, 2, 30],
@@ -332,7 +314,7 @@
           pointBackgroundColor: getColorPalette(1),
           pointHoverRadius: 4,
           pointRadius: 3,
-          label: "Current Version",
+          label: "Current Quarter",
         },
         {
           data: [10, 20, 15, 30, 22],
@@ -341,7 +323,7 @@
           pointBackgroundColor: getColorPalette(2),
           pointHoverRadius: 4,
           pointRadius: 3,
-          label: "Previous Version",
+          label: "Previous Quarter",
         },
       ],
     },
@@ -358,7 +340,7 @@
     data: {
       datasets: [
         {
-          label: "Premium Products",
+          label: "High-Risk Areas",
           data: [
             { x: 25, y: 17, r: 25 },
             { x: 30, y: 25, r: 28 },
@@ -367,7 +349,7 @@
           backgroundColor: getColorPalette(0),
         },
         {
-          label: "Basic Products",
+          label: "Low-Risk Areas",
           data: [
             { x: 10, y: 17, r: 20 },
             { x: 30, y: 10, r: 7 },
@@ -405,23 +387,10 @@
   var myMultipleLineChart = new Chart(multipleLineChart, {
     type: "line",
     data: {
-      labels: [
-        "Week 1",
-        "Week 2",
-        "Week 3",
-        "Week 4",
-        "Week 5",
-        "Week 6",
-        "Week 7",
-        "Week 8",
-        "Week 9",
-        "Week 10",
-        "Week 11",
-        "Week 12",
-      ],
+      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
       datasets: [
         {
-          label: "Mobile Apps",
+          label: "Structure Fires",
           borderColor: getColorPalette(0),
           pointBorderColor: "#FFF",
           pointBackgroundColor: getColorPalette(1),
@@ -435,7 +404,7 @@
           data: [30, 45, 45, 68, 69, 90, 100, 158, 177, 200, 245, 256],
         },
         {
-          label: "Web Apps",
+          label: "Vehicle Fires",
           borderColor: getColorPalette(1),
           pointBorderColor: "#FFF",
           pointBackgroundColor: getColorPalette(2),
@@ -449,7 +418,7 @@
           data: [10, 20, 55, 75, 80, 48, 59, 55, 23, 107, 60, 87],
         },
         {
-          label: "Desktop Apps",
+          label: "Outdoor Fires",
           borderColor: getColorPalette(2),
           pointBorderColor: "#FFF",
           pointBackgroundColor: getColorPalette(0),
@@ -488,35 +457,22 @@
   var myMultipleBarChart = new Chart(multipleBarChart, {
     type: "bar",
     data: {
-      labels: [
-        "Week 1",
-        "Week 2",
-        "Week 3",
-        "Week 4",
-        "Week 5",
-        "Week 6",
-        "Week 7",
-        "Week 8",
-        "Week 9",
-        "Week 10",
-        "Week 11",
-        "Week 12",
-      ],
+      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
       datasets: [
         {
-          label: "New Users",
+          label: "False Alarms",
           backgroundColor: getColorPalette(0),
           borderColor: getColorPalette(1),
           data: [95, 100, 112, 101, 144, 159, 178, 156, 188, 190, 210, 245],
         },
         {
-          label: "Returning Users",
+          label: "Minor Incidents",
           backgroundColor: getColorPalette(1),
           borderColor: getColorPalette(2),
           data: [145, 256, 244, 233, 210, 279, 287, 253, 287, 299, 312, 356],
         },
         {
-          label: "Premium Users",
+          label: "Major Incidents",
           backgroundColor: getColorPalette(2),
           borderColor: getColorPalette(0),
           data: [185, 279, 273, 287, 234, 312, 322, 286, 301, 320, 346, 399],
@@ -581,23 +537,10 @@
   var myHtmlLegendsChart = new Chart(htmlLegendsChart, {
     type: "line",
     data: {
-      labels: [
-        "Week 1",
-        "Week 2",
-        "Week 3",
-        "Week 4",
-        "Week 5",
-        "Week 6",
-        "Week 7",
-        "Week 8",
-        "Week 9",
-        "Week 10",
-        "Week 11",
-        "Week 12",
-      ],
+      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
       datasets: [
         {
-          label: "Mobile Platform",
+          label: "Urban Incidents",
           borderColor: gradientStroke2,
           pointBackgroundColor: gradientStroke2,
           pointRadius: 0,
@@ -608,7 +551,7 @@
           data: [154, 184, 175, 203, 210, 231, 240, 278, 252, 312, 320, 374],
         },
         {
-          label: "Web Platform",
+          label: "Suburban Incidents",
           borderColor: gradientStroke3,
           pointBackgroundColor: gradientStroke3,
           pointRadius: 0,
@@ -619,7 +562,7 @@
           data: [256, 230, 245, 287, 240, 250, 230, 295, 331, 431, 456, 521],
         },
         {
-          label: "Desktop Platform",
+          label: "Rural Incidents",
           borderColor: gradientStroke,
           pointBackgroundColor: gradientStroke,
           pointRadius: 0,
