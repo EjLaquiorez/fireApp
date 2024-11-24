@@ -3,6 +3,8 @@
 
 {% block content %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
 
 <div class="page-inner">
   <div class="page-header">
@@ -31,11 +33,18 @@
   <div class="row">
     <div class="col-md-12">
       <div class="card">
-        <div class="card-header">
+        <div class="card-header d-flex justify-content-between align-items-center">
           <h4 class="card-title">Fire Stations Overview</h4>
+          <div class="map-controls">
+            <input type="text" id="station-search" class="form-control" placeholder="Search stations...">
+          </div>
         </div>
         <div class="card-body">
           <div id="map" style="width: 100%; height: 600px"></div>
+          <div id="map-legend" class="map-legend">
+            <h6>Legend</h6>
+            <div><img src="{% static 'img/station-icon.png' %}" width="20"> Fire Station</div>
+          </div>
         </div>
       </div>
     </div>
@@ -43,9 +52,12 @@
 </div>
 
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+
 <script>
   // Initialize the map
   var map = L.map('map').setView([9.81644, 118.72239], 13);
+  var markerClusterGroup = L.markerClusterGroup();
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -64,20 +76,41 @@
 
   stations.forEach(function(station) {
     if (station && station.latitude && station.longitude) {
-      var marker = L.marker([station.latitude, station.longitude], { icon: stationIcon }).addTo(map);
+      var marker = L.marker([station.latitude, station.longitude], { icon: stationIcon });
       
       var popupContent = `
         <div class="station-popup">
           <h5>${station.name}</h5>
-          <div class="status-indicator"></div>
-          <p><strong>Status:</strong> ${station.status ? 'Active' : 'Inactive'}</p>
-          <p><strong>Address:</strong> ${station.address}</p>
+          <div class="station-info">
+            <p><i class="fas fa-map-marker-alt"></i> <strong>Location:</strong> ${station.address || 'N/A'}</p>
+            <p><i class="fas fa-truck"></i> <strong>Trucks:</strong> ${station.truck_count || 'N/A'}</p>
+            <p><i class="fas fa-users"></i> <strong>Personnel:</strong> ${station.firefighter_count || 'N/A'}</p>
+          </div>
+          <div class="station-actions">
+            <a href="/station/${station.id}" class="btn btn-sm btn-primary">View Details</a>
+          </div>
         </div>
       `;
 
       marker.bindPopup(popupContent);
+      marker.station = station; // For searching
       markers.push(marker);
+      markerClusterGroup.addLayer(marker);
     }
+  });
+
+  map.addLayer(markerClusterGroup);
+
+  // Search functionality
+  document.getElementById('station-search').addEventListener('input', function(e) {
+    var searchText = e.target.value.toLowerCase();
+    markers.forEach(function(marker) {
+      if (marker.station.name.toLowerCase().includes(searchText)) {
+        markerClusterGroup.addLayer(marker);
+      } else {
+        markerClusterGroup.removeLayer(marker);
+      }
+    });
   });
 
   // Fit map to show all markers
@@ -89,23 +122,40 @@
 
 <style>
   .station-popup {
-    min-width: 200px;
+    min-width: 250px;
+    padding: 10px;
   }
   .station-popup h5 {
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     color: #1a2035;
+    border-bottom: 2px solid #f1f1f1;
+    padding-bottom: 8px;
   }
-  .station-popup p {
-    margin-bottom: 5px;
+  .station-info p {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
-  .status-indicator {
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-    margin-right: 5px;
-    background-image: url("{% static 'img/firetruck.png' %}");
-    background-size: contain;
-    background-repeat: no-repeat;
+  .station-actions {
+    margin-top: 15px;
+    text-align: center;
+  }
+  .map-legend {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: white;
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  .map-controls {
+    width: 300px;
+  }
+  #station-search {
+    padding: 5px 10px;
+    border-radius: 4px;
   }
 </style>
 {% endblock %}

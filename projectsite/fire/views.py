@@ -8,17 +8,22 @@ from django.db.models import Count
 from datetime import datetime
 
 def map_station(request):
-    # Get fire stations from your database
-    stations = FireStation.objects.all()
+    fireStations = FireStation.objects.annotate(
+        truck_count=Count('firetruck')
+    ).values(
+        'id', 'name', 'latitude', 'longitude', 
+        'address', 'truck_count'
+    )
     
     # Format station data for the template
     station_data = [{
-        'latitude': station.latitude,
-        'longitude': station.longitude,
-        'name': station.name,
-        'address': station.address,
-        # Add other fields as needed
-    } for station in stations]
+        'id': station['id'],
+        'latitude': station['latitude'],
+        'longitude': station['longitude'],
+        'name': station['name'],
+        'address': station['address'],
+        'truck_count': station['truck_count']
+    } for station in fireStations]
 
     context = {
         'fireStations': station_data,
@@ -29,24 +34,23 @@ def map_incident(request):
     # Get fire incidents from your database
     incidents = Incident.objects.all()
     
-    # Get unique cities for the filter
-    cities = incidents.values_list('city', flat=True).distinct()
+    # Get unique locations for the filter
+    locations = incidents.values_list('location', flat=True).distinct()
     
     # Format incident data for the template
     incident_data = [{
         'latitude': incident.latitude,
         'longitude': incident.longitude,
-        'city': incident.city,
+        'location': incident.location,
         'incident_type': incident.incident_type,
         'date': incident.date.strftime('%Y-%m-%d') if incident.date else None,
         'status': incident.status,
-        'location': incident.location,
         'description': incident.description,
     } for incident in incidents]
 
     context = {
         'fireIncidents': incident_data,
-        'cities': list(cities),
+        'locations': list(locations),
     }
     return render(request, 'map_incident.html', context)
 

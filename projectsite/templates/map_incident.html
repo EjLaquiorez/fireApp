@@ -57,6 +57,24 @@
                 </select>
               </div>
             </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="severityFilter">Filter by Severity</label>
+                <select id="severityFilter" class="form-control">
+                  <option value="all">All Severity Levels</option>
+                  <option value="Minor Fire">Minor Fire</option>
+                  <option value="Moderate Fire">Moderate Fire</option>
+                  <option value="Major Fire">Major Fire</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label>Date Range</label>
+                <input type="date" id="dateFrom" class="form-control mb-2">
+                <input type="date" id="dateTo" class="form-control">
+              </div>
+            </div>
           </div>
         </div>
         <div class="card-body">
@@ -68,6 +86,10 @@
 </div>
 
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css">
+
 <script>
   // Initialize the map
   var map = L.map('map').setView([9.81644, 118.72239], 13);
@@ -88,22 +110,58 @@
   var markers = [];
   var incidents = JSON.parse('{{ fireIncidents|default:"[]"|escapejs|safe }}');
 
-  function createMarkers(filterLocation = 'all', filterStatus = 'all') {
-    // Clear existing markers
-    markers.forEach(marker => marker.remove());
+  // Create a marker cluster group
+  var markerCluster = L.markerClusterGroup();
+  map.addLayer(markerCluster);
+
+  // Custom icons for different severity levels
+  var icons = {
+    'Minor Fire': L.icon({
+      iconUrl: "{% static 'img/fire-icon-minor.png' %}",
+      iconSize: [24, 24],
+      iconAnchor: [12, 24],
+      popupAnchor: [0, -24]
+    }),
+    'Moderate Fire': L.icon({
+      iconUrl: "{% static 'img/fire-icon-moderate.png' %}",
+      iconSize: [28, 28],
+      iconAnchor: [14, 28],
+      popupAnchor: [0, -28]
+    }),
+    'Major Fire': L.icon({
+      iconUrl: "{% static 'img/fire-icon-major.png' %}",
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -32]
+    })
+  };
+
+  function createMarkers(filterLocation = 'all', filterStatus = 'all', filterSeverity = 'all', dateFrom = null, dateTo = null) {
+    markerCluster.clearLayers();
     markers = [];
 
     incidents.forEach(function(incident) {
       if (incident && incident.latitude && incident.longitude) {
-        // Apply filters
+        // Apply all filters
         if ((filterLocation === 'all' || incident.location === filterLocation) && 
-            (filterStatus === 'all' || incident.status.toLowerCase() === filterStatus)) {
+            (filterStatus === 'all' || incident.status.toLowerCase() === filterStatus) &&
+            (filterSeverity === 'all' || incident.severity_level === filterSeverity)) {
           
+          // Apply date filter if dates are selected
+          var incidentDate = new Date(incident.date);
+          if (dateFrom && dateTo) {
+            let from = new Date(dateFrom);
+            let to = new Date(dateTo);
+            if (incidentDate < from || incidentDate > to) return;
+          }
+
           var latitude = parseFloat(incident.latitude);
           var longitude = parseFloat(incident.longitude);
 
           if (!isNaN(latitude) && !isNaN(longitude)) {
-            var marker = L.marker([latitude, longitude], { icon: fireIcon }).addTo(map);
+            var marker = L.marker([latitude, longitude], { 
+              icon: icons[incident.severity_level] || fireIcon 
+            });
 
             // Format date if it exists
             var date = incident.date ? new Date(incident.date).toLocaleDateString() : 'N/A';
@@ -130,32 +188,36 @@
               this.closePopup();
             });
 
+            // Add marker to cluster instead of directly to map
+            markerCluster.addLayer(marker);
             markers.push(marker);
           }
         }
       }
     });
 
-    // Adjust map view to show all markers if there are any
+    // Adjust map view if there are markers
     if (markers.length > 0) {
-      var group = new L.featureGroup(markers);
-      map.fitBounds(group.getBounds().pad(0.1));
+      map.fitBounds(markerCluster.getBounds().pad(0.1));
     }
   }
 
   // Initialize markers
   createMarkers();
 
-  // Add event listeners for filters
-  document.getElementById('locationFilter').addEventListener('change', function(e) {
-    var status = document.getElementById('statusFilter').value;
-    createMarkers(e.target.value, status);
-  });
+  // Add event listeners for new filters
+  document.getElementById('severityFilter').addEventListener('change', updateFilters);
+  document.getElementById('dateFrom').addEventListener('change', updateFilters);
+  document.getElementById('dateTo').addEventListener('change', updateFilters);
 
-  document.getElementById('statusFilter').addEventListener('change', function(e) {
+  function updateFilters() {
     var location = document.getElementById('locationFilter').value;
-    createMarkers(location, e.target.value);
-  });
+    var status = document.getElementById('statusFilter').value;
+    var severity = document.getElementById('severityFilter').value;
+    var dateFrom = document.getElementById('dateFrom').value;
+    var dateTo = document.getElementById('dateTo').value;
+    createMarkers(location, status, severity, dateFrom, dateTo);
+  }
 </script>
 
 <style>
@@ -180,6 +242,22 @@
     color: white;
     padding: 3px 8px;
     border-radius: 3px;
+  }
+  .legend {
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  }
+  .legend img {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  .incident-popup {
+    max-height: 300px;
+    overflow-y: auto;
   }
 </style>
 {% endblock %} 
